@@ -57,7 +57,10 @@ class SnowflakeDatabaseObject:
 
         prefix = self.kwargs.get("prefix", "")
         suffix = self.kwargs.get("suffix", "")
-        return "_".join([part for part in [prefix, self.name, suffix] if part]) + ".sql"
+        return (
+            "_".join([part for part in [prefix, self.name, suffix] if part]).lower()
+            + ".sql"
+        )
 
     def save_object(self, snowflake_objects_path, sql_template, **kwargs):
 
