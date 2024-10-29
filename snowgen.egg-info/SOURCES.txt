@@ -10,5 +10,7 @@ snowgen.egg-info/dependency_links.txt
 snowgen.egg-info/entry_points.txt
 snowgen.egg-info/requires.txt
 snowgen.egg-info/top_level.txt
+snowgen/database_objects/__init__.py
+snowgen/database_objects/snowflake_database_object.py
 snowgen/database_repository/__init__.py
 snowgen/database_repository/database_repository.py
