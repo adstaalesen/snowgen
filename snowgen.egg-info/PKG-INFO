@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: snowgen
+Version: 0.1.0
+Summary: A tool for managing Snowflake databases and schemas
+Home-page: https://github.com/adstaalesen/snowgen
+Author: Adrian S. Staalesen
+License-File: LICENSE
+Requires-Dist: click
+Requires-Dist: colorama
+Requires-Dist: PyYAML
+Requires-Dist: setuptools
+Requires-Dist: inquirer
+Requires-Dist: pathlib
