@@ -6,7 +6,7 @@ setup(
     description="A tool for managing Snowflake databases and schemas",
     author="Adrian S. Staalesen",
     url="https://github.com/adstaalesen/snowgen",
-    packages=find_packages(),
+    packages=find_packages(include=["snowgen", "snowgen.*"]),
     install_requires=[
         "click",
         "colorama",
