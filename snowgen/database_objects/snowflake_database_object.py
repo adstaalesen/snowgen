@@ -16,7 +16,7 @@ class SnowflakeDatabaseObject:
         self.database = database
         self.schema = schema
         self.object_type = object_type
-        self.name = name
+        self.name = name.lower()
         self.env = kwargs.get("env", "")
         self.kwargs = kwargs
         self.pattern = []
@@ -265,49 +265,3 @@ class SnowflakeDatabaseObject:
         schema = self.kwargs.get("source_schema", self.schema)
         source = f"{self.kwargs.get("source_database")}.{schema}.{self.name}"
         return source.lower()
-
-
-{
-    "role": "kf_deployer",
-    "database": "kf_base",
-    "schema": "msci_esg_enh",
-    "object_type": "dynamic_tables",
-    "name": "CORP_EU_TAXONOMY_HISTORY",
-    "env": "{env}",
-    "kwargs": {
-        "env": "{env}",
-        "template_name": "dynamic_table.sql",
-        "object_name": "dynamic_table",
-        "lag": "5 minutes",
-        "refresh_mode": "AUTO",
-        "initialize": "ON_CREATE",
-        "warehouse": "kf_vwh",
-        "generate_columns_from_table": True,
-        "source_database": "kf_raw",
-        "source_schema": "schema_template_kf_raw",
-        "pattern": '"{column_name}"::VARCHAR AS "{column_name}"',
-        "columns": [
-            "ISSUERID",
-            "FISCAL_YEAR",
-            "FIELD_ID",
-            "VALUE",
-            "PUBLISHED_DATE",
-            "SOURCE",
-            "DATA_TYPE",
-            "ADDITIONAL_INFO",
-        ],
-    },
-    "pattern": '"{column_name}"::VARCHAR AS "{column_name}"',
-    "columns": [
-        "ISSUERID",
-        "FISCAL_YEAR",
-        "FIELD_ID",
-        "VALUE",
-        "PUBLISHED_DATE",
-        "SOURCE",
-        "DATA_TYPE",
-        "ADDITIONAL_INFO",
-    ],
-    "formatted_transformations": '"ISSUERID"::VARCHAR AS "ISSUERID",\n    "FISCAL_YEAR"::VARCHAR AS "FISCAL_YEAR",\n    "FIELD_ID"::VARCHAR AS "FIELD_ID",\n    "VALUE"::VARCHAR AS "VALUE",\n    "PUBLISHED_DATE"::VARCHAR AS "PUBLISHED_DATE",\n    "SOURCE"::VARCHAR AS "SOURCE",\n    "DATA_TYPE"::VARCHAR AS "DATA_TYPE",\n    "ADDITIONAL_INFO"::VARCHAR AS "ADDITIONAL_INFO"',
-    "source": "kf_raw.schema_template_kf_raw.CORP_EU_TAXONOMY_HISTORY",
-}
