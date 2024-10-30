@@ -29,7 +29,9 @@ class SnowflakeDatabaseObject:
                 self.pattern = kwargs["pattern"]
             self.columns = kwargs["columns"]
             self.formatted_transformations = self.format_transformations()
-            self.source = self.get_dynamic_table_source()
+            self.source_database = kwargs["source_database"]
+            self.source_schema = kwargs["source_schema"]
+            self.source_object = kwargs["source_object"]
 
     def __str__(self):
         return f"{self.role}.{self.database}.{self.schema}.{self.name}"
@@ -260,8 +262,3 @@ class SnowflakeDatabaseObject:
             )
 
         return ",\n    ".join(all_transformations)
-
-    def get_dynamic_table_source(self):
-        schema = self.kwargs.get("source_schema", self.schema)
-        source = f"{self.kwargs.get("source_database")}.{schema}.{self.name}"
-        return source.lower()

@@ -164,16 +164,32 @@ class DatabaseRepository:
 
         for file in files_in_tables_path:
             with open(file, "r") as f:
-                table_defintion = f.read().strip()
+                table_definition = f.read().strip()
 
             dynamic_table_columns = self.get_columns_from_table_definition(
-                table_defintion
+                table_definition
             )
+
+            table_name_patterns = [
+                r"CREATE OR REPLACE TABLE (\w+)",
+                r"CREATE TABLE (\w+)",
+                r"CREATE OR ALTER TABLE (\w+)",
+            ]
+
+            for pattern in table_name_patterns:
+                table_name = re.findall(pattern, table_definition)
+                if table_name:
+                    break
 
             dynamic_tables.append(
                 {
                     "columns": dynamic_table_columns,
                     "name": file.name.split(".")[0],
+                    "source_database": re.findall(
+                        r"USE DATABASE (\w+)", table_definition
+                    ),
+                    "source_schema": re.findall(r"USE SCHEMA (\w+)", table_definition),
+                    "source_object": table_name,
                 }
             )
 
