@@ -170,7 +170,7 @@ class DatabaseRepository:
                 table_definition
             )
 
-            source_database = re.findall(r"USE DATABASE (\w+)", table_definition)
+            source_database = re.findall(r"USE DATABASE ([\w_{}]+)", table_definition)
             source_schema = re.findall(r"USE SCHEMA (\w+)", table_definition)
 
             table_name_patterns = [
