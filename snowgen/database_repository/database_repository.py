@@ -170,6 +170,9 @@ class DatabaseRepository:
                 table_definition
             )
 
+            source_database = re.findall(r"USE DATABASE (\w+)", table_definition)
+            source_schema = re.findall(r"USE SCHEMA (\w+)", table_definition)
+
             table_name_patterns = [
                 r"CREATE OR REPLACE TABLE (\w+)",
                 r"CREATE TABLE (\w+)",
@@ -177,19 +180,17 @@ class DatabaseRepository:
             ]
 
             for pattern in table_name_patterns:
-                table_name = re.findall(pattern, table_definition)
-                if table_name:
+                source_object = re.findall(pattern, table_definition)
+                if source_object:
                     break
 
             dynamic_tables.append(
                 {
                     "columns": dynamic_table_columns,
-                    "name": file.name.split(".")[0],
-                    "source_database": re.findall(
-                        r"USE DATABASE (\w+)", table_definition
-                    ),
-                    "source_schema": re.findall(r"USE SCHEMA (\w+)", table_definition),
-                    "source_object": table_name,
+                    "name": file.name.split(".")[0].lower(),
+                    "source_database": source_database[0] if source_database else None,
+                    "source_schema": source_schema[0] if source_schema else None,
+                    "source_object": source_object[0] if source_object else None,
                 }
             )
 
