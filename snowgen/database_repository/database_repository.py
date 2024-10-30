@@ -36,7 +36,6 @@ class DatabaseRepository:
         self.snowflake_objects_path = (
             self.base_path / snowflake_path / "snowflake_objects"
         )
-        self.environment_parametrization = "{env}"
 
     def setup(self):
         """
@@ -81,7 +80,6 @@ class DatabaseRepository:
         schema_config = self.get_schema_templates_yaml()
         for schema_template in schema_config["schemas"]:
             if schema_template["name"] == template_name:
-                schema_template["env"] = self.environment_parametrization
                 return schema_template
 
     """ Methods for finding and reading SQL templates """
@@ -155,8 +153,6 @@ class DatabaseRepository:
             / schema
             / "tables"
         ).resolve()
-
-        print(tables_path)
 
         files_in_tables_path = [f for f in tables_path.glob("*.sql")]
 
