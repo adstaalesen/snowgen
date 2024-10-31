@@ -3,7 +3,12 @@ from snowgen.database_repository.database_repository import DatabaseRepository
 
 
 def save_objects(
-    database_repository, schema_config, schema, object_type, objects, replace
+    database_repository: DatabaseRepository,
+    schema_config,
+    schema: str,
+    object_type: str,
+    objects,
+    replace,
 ):
     for obj in objects:
         snowflake_object = SnowflakeDatabaseObject(
@@ -15,13 +20,16 @@ def save_objects(
             **obj,
         )
 
+        print(obj)
         database_repository.save_database_object(
             ddl=snowflake_object.get_ddl(
-                sql_template=database_repository.get_sql_template(obj["template_name"])
+                sql_template=database_repository.get_sql_template(
+                    template_name=obj["template_name"]
+                )
             ),
             object_path=snowflake_object.generate_object_path(
                 database_repository.snowflake_objects_path
-            ),
+            ).resolve(),
             replace=replace,
             **obj,
         )
