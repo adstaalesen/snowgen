@@ -21,18 +21,18 @@ def save_objects(
         )
 
         print(obj)
-        database_repository.save_database_object(
-            ddl=snowflake_object.get_ddl(
-                sql_template=database_repository.get_sql_template(
-                    template_name=obj["template_name"]
-                )
-            ),
-            object_path=snowflake_object.generate_object_path(
+        ddl = snowflake_object.get_ddl(
+            sql_template=database_repository.get_sql_template(
+                template_name=obj["template_name"]
+            )
+        )
+        object_path = (
+            snowflake_object.generate_object_path(
                 database_repository.snowflake_objects_path
             ).resolve(),
-            replace=replace,
-            **obj,
         )
+
+        database_repository.save_database_object(ddl, object_path, replace=replace)
 
 
 def create_new_schema_in(
