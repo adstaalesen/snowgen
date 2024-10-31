@@ -125,9 +125,7 @@ def create_new_schema_in(
             if object["generate_columns_from_table"]:
 
                 dynamic_tables_to_generate = (
-                    database_repository.get_dynamic_table_transformations_from_table(
-                        database=object["source_database"], schema=schema
-                    )
+                    database_repository.get_dynamic_table_transformations_from_table()
                 )
 
                 for t in dynamic_tables_to_generate:
