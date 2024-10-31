@@ -17,7 +17,6 @@ class SnowflakeDatabaseObject:
         self.schema = schema
         self.object_type = object_type
         self.name = name.lower()
-        self.env = kwargs.get("env", "")
         self.kwargs = kwargs
         self.pattern = []
         self.env = "{env}"
