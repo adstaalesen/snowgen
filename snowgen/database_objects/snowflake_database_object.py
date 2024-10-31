@@ -8,14 +8,14 @@ class SnowflakeDatabaseObject:
         role: str,
         database: str,
         schema: str,
-        name: str,
+        object_name: str,
         object_type: str,
         **kwargs,
     ):
         self.role = role
         self.database = database
         self.schema = schema
-        self.object_name = name.lower()
+        self.object_name = object_name.lower()
         self.object_type = object_type
         self.kwargs = kwargs
         self.pattern = []
