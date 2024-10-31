@@ -1,6 +1,7 @@
 from pathlib import Path
 import re
 import yaml
+import inquirer
 
 
 class DatabaseRepository:
@@ -116,6 +117,17 @@ class DatabaseRepository:
             return match.groupdict()
         return None
 
+    def get_all_databases(self):
+        return [p.name for p in (self.snowflake_objects_path / "databases").iterdir()]
+
+    def get_all_schemas(self, database):
+        return [
+            p.name
+            for p in (
+                self.snowflake_objects_path / "databases" / database / "schemas"
+            ).iterdir()
+        ]
+
     def get_table_columns_from_template_files(self, data_template_name, delimiter=","):
         folder_path = self._find_folder_path(folder_name="data_templates")
         data_path = (Path(folder_path) / data_template_name).resolve()
@@ -143,14 +155,34 @@ class DatabaseRepository:
         columns = re.findall(pattern, table_definition)
         return columns
 
-    def get_dynamic_table_transformations_from_table(self, database, schema):
+    def get_dynamic_table_transformations_from_table(self):
+
+        databases = inquirer.prompt(
+            [
+                inquirer.List(
+                    "database",
+                    message="Select DATABASE that holds tables to transform",
+                    choices=self.get_all_databases(),
+                )
+            ]
+        )
+
+        schemas = inquirer.prompt(
+            [
+                inquirer.List(
+                    "schema",
+                    message="Select SCHEMA that holds tables to transform",
+                    choices=self.get_all_schemas(databases["database"]),
+                )
+            ]
+        )
 
         tables_path = (
             self.snowflake_objects_path
             / "databases"
-            / database
+            / databases["database"]
             / "schemas"
-            / schema
+            / schemas["schema"]
             / "tables"
         ).resolve()
 
