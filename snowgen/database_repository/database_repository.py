@@ -143,6 +143,9 @@ class DatabaseRepository:
         """
         Save the database object to the specified path.
         """
+
+        object_path.parent.mkdir(parents=True, exist_ok=True)
+
         if replace:
             with open(object_path, "w") as file:
                 file.write(ddl)

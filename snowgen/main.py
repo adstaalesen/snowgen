@@ -20,8 +20,6 @@ def save_objects(
             **obj,
         )
 
-        print(obj)
-
         ddl = snowflake_object.get_ddl(
             sql_template=database_repository.get_sql_template(
                 template_name=obj["template_name"]
