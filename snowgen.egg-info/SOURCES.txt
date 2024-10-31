@@ -4,6 +4,7 @@ setup.py
 snowgen/__init__.py
 snowgen/cli.py
 snowgen/main.py
+snowgen/test_main.py
 snowgen.egg-info/PKG-INFO
 snowgen.egg-info/SOURCES.txt
 snowgen.egg-info/dependency_links.txt

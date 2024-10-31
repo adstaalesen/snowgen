@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="snowgen",
-    version="0.1.0",
+    version="0.1.1",
     description="A tool for managing Snowflake databases and schemas",
     author="Adrian S. Staalesen",
     url="https://github.com/adstaalesen/snowgen",

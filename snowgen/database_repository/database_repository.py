@@ -84,6 +84,17 @@ class DatabaseRepository:
 
         return database, schema
 
+    def prompt_user_for_delimiter(self, schema):
+        return inquirer.prompt(
+            [
+                inquirer.Text(
+                    "field_delimiter",
+                    message=f"Enter the field delimiter used in the data files for {schema}",
+                    default=",",
+                )
+            ]
+        )["field_delimiter"]
+
     """ Methods for finding and reading YAML templates """
 
     def load_yaml_file(self, yaml_file):
@@ -128,6 +139,18 @@ class DatabaseRepository:
                 return file.read_text()
         return None
 
+    def save_database_object(self, ddl: str, object_path: str, replace=False):
+        """
+        Save the database object to the specified path.
+        """
+        if replace:
+            with open(object_path, "w") as file:
+                file.write(ddl)
+        else:
+            if not Path(object_path).exists():
+                with open(object_path, "w") as file:
+                    file.write(ddl)
+
     def extract_filename_parts(self, filename):
         """
         Extract parts of a filename that follows the pattern <filename>_<date>.<file_type>.
@@ -151,12 +174,14 @@ class DatabaseRepository:
             ).iterdir()
         ]
 
-    def get_table_columns_from_template_files(self, data_template_name, delimiter=","):
+    def get_table_columns_from_template_files(self, data_template_name):
         folder_path = self._find_folder_path(folder_name="data_templates")
         data_path = (Path(folder_path) / data_template_name).resolve()
         files_in_data_path = [f for f in data_path.glob("*.*")]
 
         tables = []
+
+        delimiter = self.prompt_user_for_delimiter(data_template_name)
 
         for file in files_in_data_path:
             with open(file, "r") as f:

@@ -1,16 +1,19 @@
-import inquirer
 from snowgen.database_objects.snowflake_database_object import SnowflakeDatabaseObject
 from snowgen.database_repository.database_repository import DatabaseRepository
 
 
 def create_new_schema_in(
-    database_repository: DatabaseRepository, schema: str, schema_template: str
+    database_repository: DatabaseRepository,
+    schema: str,
+    schema_template: str,
+    replace=False,
 ):
 
     schema_config = database_repository.get_schema_template(schema_template)
 
     def save_objects(object_type, objects):
         for obj in objects:
+
             snowflake_object = SnowflakeDatabaseObject(
                 database=schema_config["database"],
                 schema=schema,
@@ -19,9 +22,17 @@ def create_new_schema_in(
                 name=obj["object_name"],
                 **obj,
             )
-            snowflake_object.save_object(
-                snowflake_objects_path=database_repository.get_snowflake_objects_path(),
-                sql_template=database_repository.get_sql_template(obj["template_name"]),
+
+            database_repository.save_database_object(
+                ddl=snowflake_object.get_ddl(
+                    sql_template=database_repository.get_sql_template(
+                        obj["template_name"]
+                    )
+                ),
+                object_path=snowflake_object.generate_object_path(
+                    database_repository.snowflake_objects_path
+                ),
+                replace=replace,
                 **obj,
             )
 
@@ -39,19 +50,9 @@ def create_new_schema_in(
 
             if object["generate_columns_from_template"]:
 
-                delimiter = inquirer.prompt(
-                    [
-                        inquirer.Text(
-                            "field_delimiter",
-                            message=f"Please enter the data delimiter for {schema}",
-                        ),
-                    ]
-                )
-
                 tables_to_generate = (
                     database_repository.get_table_columns_from_template_files(
                         data_template_name=schema,
-                        delimiter=delimiter["field_delimiter"],
                     )
                 )
 
@@ -68,24 +69,7 @@ def create_new_schema_in(
                         ]:
                             object[key] = t[key]
 
-                        save_objects("tables", object)
-
-                    # table_object = SnowflakeDatabaseObject(
-                    #     role=schema_config["role"],
-                    #     database=schema_config["database"],
-                    #     schema=schema,
-                    #     name=t["name"],
-                    #     object_type="tables",
-                    #     **object,
-                    # )
-
-                    # table_object.save_object(
-                    #     snowflake_objects_path=database_repository.get_snowflake_objects_path(),
-                    #     sql_template=database_repository.get_sql_template(
-                    #         object["template_name"]
-                    #     ),
-                    #     **object,
-                    # )
+                    save_objects("tables", object)
 
     if "dynamic_tables" in schema_config.keys():
         for object in schema_config["dynamic_tables"]:
@@ -108,39 +92,11 @@ def create_new_schema_in(
                         ]:
                             object[key] = t[key]
 
-                    dynamic_table_object = SnowflakeDatabaseObject(
-                        role=schema_config["role"],
-                        database=schema_config["database"],
-                        schema=schema,
-                        name=t["object_name"],
-                        object_type="dynamic_tables",
-                        **object,
-                    )
-                    dynamic_table_object.save_object(
-                        snowflake_objects_path=database_repository.get_snowflake_objects_path(),
-                        sql_template=database_repository.get_sql_template(
-                            object["template_name"]
-                        ),
-                        **object,
-                    )
+                    save_objects("dynamic_tables", object)
 
     if "procedures" in schema_config.keys():
         for object in schema_config["procedures"]:
-            procedure = SnowflakeDatabaseObject(
-                database=schema_config["database"],
-                schema=schema,
-                role=schema_config["role"],
-                object_type="procedures",
-                name=object["object_name"],
-            )
-
-            procedure.save_object(
-                snowflake_objects_path=database_repository.get_snowflake_objects_path(),
-                sql_template=database_repository.get_sql_template(
-                    object["template_name"]
-                ),
-                **object,
-            )
+            save_objects("procedures", schema_config["procedures"])
 
 
 def init(database_repository: DatabaseRepository):

@@ -15,8 +15,8 @@ class SnowflakeDatabaseObject:
         self.role = role
         self.database = database
         self.schema = schema
+        self.object_name = name.lower()
         self.object_type = object_type
-        self.name = name.lower()
         self.kwargs = kwargs
         self.pattern = []
         self.env = "env"
@@ -34,7 +34,7 @@ class SnowflakeDatabaseObject:
             self.source_object = kwargs["source_object"]
 
     def __str__(self):
-        return f"{self.role}.{self.database}.{self.schema}.{self.name}"
+        return f"{self.role}.{self.database}.{self.schema}.{self.object_name}"
 
     def to_dict(self):
         return self.__dict__
@@ -60,39 +60,24 @@ class SnowflakeDatabaseObject:
         prefix = self.kwargs.get("prefix", "")
         suffix = self.kwargs.get("suffix", "")
         return (
-            "_".join([part for part in [prefix, self.name, suffix] if part]).lower()
+            "_".join(
+                [part for part in [prefix, self.object_name, suffix] if part]
+            ).lower()
             + ".sql"
         )
 
-    def save_object(self, snowflake_objects_path, sql_template, **kwargs):
+    def get_ddl(self, sql_template, **kwargs):
 
         replacements = {**self.__dict__, **kwargs}
         prefix = self.kwargs.get("prefix", "")
         suffix = self.kwargs.get("suffix", "")
         replacements["name"] = "_".join(
-            [part for part in [prefix, self.name, suffix] if part]
+            [part for part in [prefix, self.object_name, suffix] if part]
         )
 
         ddl = sql_template.format(**replacements)
-        object_path = self.generate_object_path(
-            snowflake_objects_path=snowflake_objects_path
-        )
 
-        object_path.parent.mkdir(parents=True, exist_ok=True)
-
-        if not object_path.exists():
-            with object_path.resolve().open("w") as file:
-                file.write(ddl)
-
-    # def replace_object(self, snowflake_objects_path, **kwargs):
-    #     ddl = self.generate_ddl(template_name, **kwargs)
-    #     object_path = self.generate_object_path(
-    #         snowflake_objects_path=snowflake_objects_path
-    #     )
-
-    #     if object_path.exists():
-    #         with object_path.open("w") as file:
-    #             file.write(ddl)
+        return ddl
 
     def get_reserved_keywords(self):
         return [
