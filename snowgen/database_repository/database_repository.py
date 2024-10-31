@@ -61,6 +61,29 @@ class DatabaseRepository:
         # Create the directory structure
         print(f"Created directory structure")
 
+    def prompt_user_for_source(self):
+        database = inquirer.prompt(
+            [
+                inquirer.List(
+                    "database",
+                    message="Select DATABASE that holds tables to transform",
+                    choices=self.get_all_databases(),
+                )
+            ]
+        )["database"]
+
+        schema = inquirer.prompt(
+            [
+                inquirer.List(
+                    "schema",
+                    message="Select SCHEMA that holds tables to transform",
+                    choices=self.get_all_schemas(database),
+                )
+            ]
+        )["schema"]
+
+        return database, schema
+
     """ Methods for finding and reading YAML templates """
 
     def load_yaml_file(self, yaml_file):
@@ -142,7 +165,7 @@ class DatabaseRepository:
             tables.append(
                 {
                     "columns": header_row.split(delimiter),
-                    "name": self.extract_filename_parts(file.name)["filename"],
+                    "object_name": self.extract_filename_parts(file.name)["filename"],
                     "comment": f"SQL generated using file {file.name}",
                 }
             )
@@ -155,34 +178,41 @@ class DatabaseRepository:
         columns = re.findall(pattern, table_definition)
         return columns
 
+    def parse_dynamic_table_definition(self, table_definition):
+        columns = self.get_columns_from_table_definition(table_definition)
+        source_database = re.findall(r"USE DATABASE ([\w_{}]+)", table_definition)
+        source_schema = re.findall(r"USE SCHEMA (\w+)", table_definition)
+
+        table_name_patterns = [
+            r"CREATE OR REPLACE TABLE (\w+)",
+            r"CREATE TABLE (\w+)",
+            r"CREATE OR ALTER TABLE (\w+)",
+        ]
+
+        source_object = None
+        for pattern in table_name_patterns:
+            match = re.findall(pattern, table_definition)
+            if match:
+                source_object = match[0]
+                break
+
+        return {
+            "columns": columns,
+            "source_database": source_database[0] if source_database else None,
+            "source_schema": source_schema[0] if source_schema else None,
+            "source_object": source_object,
+        }
+
     def get_dynamic_table_transformations_from_table(self):
 
-        databases = inquirer.prompt(
-            [
-                inquirer.List(
-                    "database",
-                    message="Select DATABASE that holds tables to transform",
-                    choices=self.get_all_databases(),
-                )
-            ]
-        )
-
-        schemas = inquirer.prompt(
-            [
-                inquirer.List(
-                    "schema",
-                    message="Select SCHEMA that holds tables to transform",
-                    choices=self.get_all_schemas(databases["database"]),
-                )
-            ]
-        )
+        database, schema = self.prompt_user_for_source()
 
         tables_path = (
             self.snowflake_objects_path
             / "databases"
-            / databases["database"]
+            / database
             / "schemas"
-            / schemas["schema"]
+            / schema
             / "tables"
         ).resolve()
 
@@ -194,33 +224,9 @@ class DatabaseRepository:
             with open(file, "r") as f:
                 table_definition = f.read().strip()
 
-            dynamic_table_columns = self.get_columns_from_table_definition(
-                table_definition
-            )
-
-            source_database = re.findall(r"USE DATABASE ([\w_{}]+)", table_definition)
-            source_schema = re.findall(r"USE SCHEMA (\w+)", table_definition)
-
-            table_name_patterns = [
-                r"CREATE OR REPLACE TABLE (\w+)",
-                r"CREATE TABLE (\w+)",
-                r"CREATE OR ALTER TABLE (\w+)",
-            ]
-
-            for pattern in table_name_patterns:
-                source_object = re.findall(pattern, table_definition)
-                if source_object:
-                    break
-
-            dynamic_tables.append(
-                {
-                    "columns": dynamic_table_columns,
-                    "name": file.name.split(".")[0].lower(),
-                    "source_database": source_database[0] if source_database else None,
-                    "source_schema": source_schema[0] if source_schema else None,
-                    "source_object": source_object[0] if source_object else None,
-                }
-            )
+            table_info = self.parse_table_definition(table_definition)
+            table_info["object_name"] = file.name.split(".")[0].lower()
+            dynamic_tables.append(table_info)
 
         return dynamic_tables
 

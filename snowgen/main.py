@@ -9,61 +9,30 @@ def create_new_schema_in(
 
     schema_config = database_repository.get_schema_template(schema_template)
 
-    if "file_formats" in schema_config.keys():
-        for object in schema_config["file_formats"]:
-
-            file_format = SnowflakeDatabaseObject(
+    def save_objects(object_type, objects):
+        for obj in objects:
+            snowflake_object = SnowflakeDatabaseObject(
                 database=schema_config["database"],
                 schema=schema,
                 role=schema_config["role"],
-                object_type="file_formats",
-                name=object["object_name"],
-                **object,
+                object_type=object_type,
+                name=obj["object_name"],
+                **obj,
             )
-
-            file_format.save_object(
+            snowflake_object.save_object(
                 snowflake_objects_path=database_repository.get_snowflake_objects_path(),
-                sql_template=database_repository.get_sql_template(
-                    object["template_name"]
-                ),
-                **object,
+                sql_template=database_repository.get_sql_template(obj["template_name"]),
+                **obj,
             )
 
-    if "stages" in schema_config.keys():
-        for object in schema_config["stages"]:
-            internal_stage = SnowflakeDatabaseObject(
-                database=schema_config["database"],
-                schema=schema,
-                role=schema_config["role"],
-                object_type="internal_stages",
-                name=object["object_name"],
-            )
+    if "file_formats" in schema_config:
+        save_objects("file_formats", schema_config["file_formats"])
 
-            internal_stage.save_object(
-                snowflake_objects_path=database_repository.get_snowflake_objects_path(),
-                sql_template=database_repository.get_sql_template(
-                    object["template_name"]
-                ),
-                **object,
-            )
+    if "stages" in schema_config:
+        save_objects("internal_stages", schema_config["stages"])
 
-    if "sequences" in schema_config.keys():
-        for object in schema_config["sequences"]:
-            sequence = SnowflakeDatabaseObject(
-                database=schema_config["database"],
-                schema=schema,
-                role=schema_config["role"],
-                object_type="sequences",
-                name=object["object_name"],
-            )
-
-            sequence.save_object(
-                snowflake_objects_path=database_repository.get_snowflake_objects_path(),
-                sql_template=database_repository.get_sql_template(
-                    object["template_name"]
-                ),
-                **object,
-            )
+    if "sequences" in schema_config:
+        save_objects("sequences", schema_config["sequences"])
 
     if "tables" in schema_config.keys():
         for object in schema_config["tables"]:
@@ -94,27 +63,29 @@ def create_new_schema_in(
                             "role",
                             "database",
                             "schema",
-                            "name",
+                            "object_name",
                             "object_type",
                         ]:
                             object[key] = t[key]
 
-                    table_object = SnowflakeDatabaseObject(
-                        role=schema_config["role"],
-                        database=schema_config["database"],
-                        schema=schema,
-                        name=t["name"],
-                        object_type="tables",
-                        **object,
-                    )
+                        save_objects("tables", object)
 
-                    table_object.save_object(
-                        snowflake_objects_path=database_repository.get_snowflake_objects_path(),
-                        sql_template=database_repository.get_sql_template(
-                            object["template_name"]
-                        ),
-                        **object,
-                    )
+                    # table_object = SnowflakeDatabaseObject(
+                    #     role=schema_config["role"],
+                    #     database=schema_config["database"],
+                    #     schema=schema,
+                    #     name=t["name"],
+                    #     object_type="tables",
+                    #     **object,
+                    # )
+
+                    # table_object.save_object(
+                    #     snowflake_objects_path=database_repository.get_snowflake_objects_path(),
+                    #     sql_template=database_repository.get_sql_template(
+                    #         object["template_name"]
+                    #     ),
+                    #     **object,
+                    # )
 
     if "dynamic_tables" in schema_config.keys():
         for object in schema_config["dynamic_tables"]:
@@ -132,7 +103,7 @@ def create_new_schema_in(
                             "role",
                             "database",
                             "schema",
-                            "name",
+                            "object_name",
                             "object_type",
                         ]:
                             object[key] = t[key]
@@ -141,7 +112,7 @@ def create_new_schema_in(
                         role=schema_config["role"],
                         database=schema_config["database"],
                         schema=schema,
-                        name=t["name"],
+                        name=t["object_name"],
                         object_type="dynamic_tables",
                         **object,
                     )
