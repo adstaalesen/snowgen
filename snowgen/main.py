@@ -18,7 +18,6 @@ def create_new_schema_in(
                 role=schema_config["role"],
                 object_type="file_formats",
                 name=object["object_name"],
-                env=database_repository.environment_parametrization,
                 **object,
             )
 
@@ -38,7 +37,6 @@ def create_new_schema_in(
                 role=schema_config["role"],
                 object_type="internal_stages",
                 name=object["object_name"],
-                env=database_repository.environment_parametrization,
             )
 
             internal_stage.save_object(
@@ -57,7 +55,6 @@ def create_new_schema_in(
                 role=schema_config["role"],
                 object_type="sequences",
                 name=object["object_name"],
-                env=database_repository.environment_parametrization,
             )
 
             sequence.save_object(
@@ -108,7 +105,6 @@ def create_new_schema_in(
                         schema=schema,
                         name=t["name"],
                         object_type="tables",
-                        env=database_repository.environment_parametrization,
                         **object,
                     )
 
@@ -147,7 +143,6 @@ def create_new_schema_in(
                         schema=schema,
                         name=t["name"],
                         object_type="dynamic_tables",
-                        env=database_repository.environment_parametrization,
                         **object,
                     )
                     dynamic_table_object.save_object(
@@ -166,7 +161,6 @@ def create_new_schema_in(
                 role=schema_config["role"],
                 object_type="procedures",
                 name=object["object_name"],
-                env=database_repository.environment_parametrization,
             )
 
             procedure.save_object(
