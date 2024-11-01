@@ -1,1 +1,0 @@
-CREATE STAGE IF NOT EXISTS {{name}}

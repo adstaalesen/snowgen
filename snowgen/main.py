@@ -12,9 +12,9 @@ def save_objects(
 ):
     for obj in objects:
         snowflake_object = SnowflakeDatabaseObject(
+            role=schema_config["role"],
             database=schema_config["database"],
             schema=schema,
-            role=schema_config["role"],
             object_type=object_type,
             **obj,
         )
@@ -22,7 +22,8 @@ def save_objects(
         ddl = snowflake_object.get_ddl(
             sql_template=database_repository.get_sql_template(
                 template_name=obj["template_name"]
-            )
+            ),
+            **obj,
         )
 
         object_path = snowflake_object.generate_object_path(
@@ -72,7 +73,10 @@ def create_new_schema_in(
         )
 
     if "tables" in schema_config.keys():
+
         for object in schema_config["tables"]:
+
+            tables_to_generate = []
 
             if object["generate_columns_from_template"]:
 
@@ -84,25 +88,33 @@ def create_new_schema_in(
 
                 for t in tables_to_generate:
 
-                    for key in t.keys():
+                    for key in object.keys():
                         if key not in [
-                            object.keys(),
-                            "role",
+                            t.keys(),
                             "database",
                             "schema",
-                            "object_name",
+                            "role",
                             "object_type",
                         ]:
-                            object[key] = t[key]
+                            t[key] = object[key]
 
-                    save_objects(
-                        database_repository,
-                        schema_config,
-                        schema,
-                        "tables",
-                        object,
-                        replace,
-                    )
+                save_objects(
+                    database_repository,
+                    schema_config,
+                    schema,
+                    "tables",
+                    tables_to_generate,
+                    replace,
+                )
+            else:
+                save_objects(
+                    database_repository,
+                    schema_config,
+                    schema,
+                    "tables",
+                    [object],
+                    replace,
+                )
 
     if "dynamic_tables" in schema_config.keys():
         for object in schema_config["dynamic_tables"]:
@@ -114,25 +126,33 @@ def create_new_schema_in(
 
                 for t in dynamic_tables_to_generate:
 
-                    for key in t.keys():
+                    for key in object.keys():
                         if key not in [
-                            object.keys(),
-                            "role",
+                            t.keys(),
                             "database",
                             "schema",
-                            "object_name",
+                            "role",
                             "object_type",
                         ]:
-                            object[key] = t[key]
+                            t[key] = object[key]
 
-                    save_objects(
-                        database_repository,
-                        schema_config,
-                        schema,
-                        "dynamic_tables",
-                        object,
-                        replace,
-                    )
+                save_objects(
+                    database_repository,
+                    schema_config,
+                    schema,
+                    "dynamic_tables",
+                    dynamic_tables_to_generate,
+                    replace,
+                )
+            else:
+                save_objects(
+                    database_repository,
+                    schema_config,
+                    schema,
+                    "dynamic_tables",
+                    [object],
+                    replace,
+                )
 
     if "procedures" in schema_config.keys():
         for object in schema_config["procedures"]:

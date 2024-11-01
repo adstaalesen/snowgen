@@ -252,7 +252,7 @@ class DatabaseRepository:
             with open(file, "r") as f:
                 table_definition = f.read().strip()
 
-            table_info = self.parse_table_definition(table_definition)
+            table_info = self.parse_dynamic_table_definition(table_definition)
             table_info["object_name"] = file.name.split(".")[0].lower()
             dynamic_tables.append(table_info)
 
