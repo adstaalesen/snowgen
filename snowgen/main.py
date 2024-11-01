@@ -15,8 +15,8 @@ def save_objects(
             database=schema_config["database"],
             schema=schema,
             role=schema_config["role"],
+            object_name=obj["object_name"],
             object_type=object_type,
-            name=obj["object_name"],
             **obj,
         )
 
