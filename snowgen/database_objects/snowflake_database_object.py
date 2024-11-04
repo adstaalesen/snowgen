@@ -19,7 +19,7 @@ class SnowflakeDatabaseObject:
         self.object_type = object_type
         self.kwargs = kwargs
         self.pattern = []
-        self.env = "env"
+        self.env = "{env}"
 
         if "columns" in kwargs and object_type == "tables":
             self.columns = kwargs["columns"]

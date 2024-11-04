@@ -1,6 +1,6 @@
 import click
 import inquirer
-from .main import create_new_schema_in, init  # Import the function you want to trigger
+from .main import create_schema_in, init  # Import the function you want to trigger
 from snowgen.database_repository.database_repository import DatabaseRepository
 
 
@@ -15,8 +15,8 @@ def new_database():
     click.echo("New database created successfully.")
 
 
-@cli.command(name="new-schema")
-def new_schema():
+@cli.command(name="generate-schema")
+def create_schema_command():
     """Create a new schema."""
 
     database_repository = DatabaseRepository()
@@ -30,17 +30,47 @@ def new_schema():
     template = inquirer.prompt(
         [
             inquirer.List(
-                "schema_templates",
+                "schema_template",
                 message="Please choose a schema template",
-                choices=database_repository.get_schema_templates(),
+                choices=database_repository.get_available_schema_templates(),
             ),
         ]
     )
 
-    create_new_schema_in(
-        database_repository, schema["schema_name"], template["schema_templates"]
+    database = database_repository.get_schema_template(template["schema_template"])[
+        "database"
+    ]
+
+    action = "created"
+
+    if schema["schema_name"] in database_repository.get_all_schemas(database):
+
+        click.echo("Schema already exists.")
+
+        schema_exists_decision = inquirer.prompt(
+            [
+                inquirer.List(
+                    "choice",
+                    message="Do you want to regenerate or update the schema?",
+                    choices=["Regenerate", "Update"],
+                ),
+            ]
+        )
+
+        if schema_exists_decision["choice"] == "Regenerate":
+            database_repository.delete_schema(database, schema["schema_name"])
+            action = "regenerated"
+        else:
+            action = "updated"
+
+    create_schema_in(
+        database_repository,
+        schema["schema_name"],
+        template["schema_template"],
+        replace=False,
     )
-    click.echo("New schema created successfully.")
+
+    click.echo(f"Schema {action} successfully.")
 
 
 @cli.command(name="init")

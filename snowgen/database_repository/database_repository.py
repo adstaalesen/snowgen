@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 import re
 import yaml
 import inquirer
@@ -61,6 +62,13 @@ class DatabaseRepository:
         # Create the directory structure
         print(f"Created directory structure")
 
+    def delete_schema(self, database, schema):
+        delete_path = Path(
+            self.snowflake_objects_path / "databases" / database / "schemas" / schema
+        )
+        if delete_path.exists() and delete_path.is_dir():
+            shutil.rmtree(delete_path)
+
     def prompt_user_for_source(self):
         database = inquirer.prompt(
             [
@@ -107,7 +115,7 @@ class DatabaseRepository:
             self.base_path / "templates" / "schema_templates" / "schemas.yaml"
         )
 
-    def get_schema_templates(self):
+    def get_available_schema_templates(self):
         schema_config = self.get_schema_templates_yaml()
         return [schema_config["name"] for schema_config in schema_config["schemas"]]
 
@@ -170,15 +178,20 @@ class DatabaseRepository:
         return [p.name for p in (self.snowflake_objects_path / "databases").iterdir()]
 
     def get_all_schemas(self, database):
-        return [
-            p.name
-            for p in (
-                self.snowflake_objects_path / "databases" / database / "schemas"
-            ).iterdir()
-        ]
+        try:
+            return [
+                p.name
+                for p in (
+                    self.snowflake_objects_path / "databases" / database / "schemas"
+                )
+                .resolve()
+                .iterdir()
+            ]
+        except FileNotFoundError:
+            return []
 
     def get_table_columns_from_template_files(self, template_files_name):
-        folder_path = self._find_folder_path(folder_name="template_files_name")
+        folder_path = self._find_folder_path(folder_name="template_files")
         data_path = (Path(folder_path) / template_files_name).resolve()
         files_in_data_path = [f for f in data_path.glob("*.*")]
 

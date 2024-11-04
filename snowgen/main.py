@@ -33,7 +33,7 @@ def save_objects(
         database_repository.save_database_object(ddl, object_path, replace=replace)
 
 
-def create_new_schema_in(
+def create_schema_in(
     database_repository: DatabaseRepository,
     schema: str,
     schema_template: str,
@@ -41,6 +41,16 @@ def create_new_schema_in(
 ):
 
     schema_config = database_repository.get_schema_template(schema_template)
+
+    if "schema_definition" in schema_config:
+        save_objects(
+            database_repository,
+            schema_config,
+            schema,
+            "schema_definition",
+            schema_config["schema_definition"],
+            replace,
+        )
 
     if "file_formats" in schema_config:
         save_objects(
@@ -82,7 +92,7 @@ def create_new_schema_in(
 
                 tables_to_generate = (
                     database_repository.get_table_columns_from_template_files(
-                        data_template_name=schema,
+                        template_files_name=schema,
                     )
                 )
 
