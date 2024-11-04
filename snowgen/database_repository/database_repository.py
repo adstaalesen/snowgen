@@ -177,14 +177,14 @@ class DatabaseRepository:
             ).iterdir()
         ]
 
-    def get_table_columns_from_template_files(self, data_template_name):
-        folder_path = self._find_folder_path(folder_name="data_templates")
-        data_path = (Path(folder_path) / data_template_name).resolve()
+    def get_table_columns_from_template_files(self, template_files_name):
+        folder_path = self._find_folder_path(folder_name="template_files_name")
+        data_path = (Path(folder_path) / template_files_name).resolve()
         files_in_data_path = [f for f in data_path.glob("*.*")]
 
         tables = []
 
-        delimiter = self.prompt_user_for_delimiter(data_template_name)
+        delimiter = self.prompt_user_for_delimiter(template_files_name)
 
         for file in files_in_data_path:
             with open(file, "r") as f:
